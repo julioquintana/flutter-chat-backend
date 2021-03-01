@@ -21,6 +21,7 @@ const validJWT = (req, res, next) => {
     }
 }
 
+
 module.exports = {
     validJWT
 }

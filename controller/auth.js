@@ -1,7 +1,7 @@
 const {response} = require('express')
 const User = require("../models/usuario");
 const bcrypt = require('bcryptjs')
-const generateJWT = require("../helpers/jwt");
+const {generateJWT} = require("../helpers/jwt");
 
 const createUser = async (req, res = response) => {
 
@@ -12,13 +12,17 @@ const createUser = async (req, res = response) => {
         if(isEmailExist){
             return  res.status(400).json({
                 ok: false,
-                body: 'No se puede registrar, ya existe este email'
+                errors: [{
+                    'msg': 'No se puede registrar, ya existe este email'
+                }]
             });
         }
     }catch (e) {
         return res.status(500).json({
             ok: false,
-            body: 'Error interno, informe al adminstrador'
+            errors: [{
+                'msg': 'Error interno, informe al adminstrador'
+            }]
         });
     }
     const user = new User(req.body);
@@ -41,26 +45,30 @@ const loginUser = async (req, res = response) => {
     const {email, password} = req.body;
 
     try{
-        const userDb = await User.findOne({email});
-        if(!userDb){
+        const user = await User.findOne({email});
+        if(!user){
             return  res.status(404).json({
                 ok: false,
-                body: 'Email no encontrado'
+                errors: [{
+                    'msg': 'Email no encontrado'
+                }]
             });
         }
-        const validPassword = bcrypt.compareSync(password,userDb.password );
+        const validPassword = bcrypt.compareSync(password,user.password );
 
         if(!validPassword){
             return  res.status(400).json({
                 ok: false,
-                body: 'Contraseña invalida'
+                errors: [{
+                    'msg': 'Contraseña invalida'
+                }]
             });
         }
-        const token = await generateJWT(userDb.id);
+        const token = await generateJWT(user.id);
 
         res.json({
             ok: true,
-            userDb,
+            user,
             token
         })
 
@@ -69,32 +77,34 @@ const loginUser = async (req, res = response) => {
         return res.status(500).json({
             ok: false,
             e,
-            body: 'Error interno, informe al adminstrador'
+            errors: [{
+                'msg': 'Error interno, informe al adminstrador'
+            }]
         });
     }
 }
 
 const renewToken = async (req, res = response) => {
-    try{
-    const { uid } = req;
-    const token = await generateJWT(uid);
-    const userDb = await User.findById(uid);
+    try {
+        const {uid} = req;
+        const token = await generateJWT(uid);
+        const user = await User.findById(uid);
 
         res.json({
             ok: true,
-            userDb,
+            user,
             token
         })
 
-    }catch (e) {
+    } catch (e) {
         return res.status(500).json({
             ok: false,
             e,
-            body: 'Error interno, informe al adminstrador'
+            errors: [{
+                'msg': 'Error interno, informe al adminstrador'
+            }]
         });
     }
 }
-
-
 
 module.exports = {createUser,loginUser,renewToken};

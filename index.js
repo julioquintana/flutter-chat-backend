@@ -4,13 +4,14 @@ require('dotenv').config();
 //db config
 require('./config/database').dbConnection();
 const {rutas} = require("./routes/auth");
+const {routeUser} = require("./routes/users");
+const {routeMessages} = require("./routes/messages");
 
 // App de Express
 const app = express();
 
 //lectura y parseo de Body
 app.use(express.json());
-
 // Node Server
 const server = require('http').createServer(app);
 module.exports.io = require('socket.io')(server);
@@ -22,6 +23,8 @@ app.use(express.static(publicPath));
 
 // mis rutas
 app.use('/api/login', rutas);
+app.use('/api/users', routeUser);
+app.use('/api/messages' , routeMessages);
 
 server.listen(process.env.PORT, (err) => {
 

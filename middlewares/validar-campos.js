@@ -2,11 +2,11 @@ const {validationResult} = require("express-validator");
 
 
 const validateAttribute = (req, res, next ) => {
-    const errorsReq = validationResult(req);
-    if (!errorsReq.isEmpty()) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
         return res.status(400).json({
             ok: false,
-            errors: errorsReq.mapped()
+             errors: errors.errors
         });
     }
     next();
